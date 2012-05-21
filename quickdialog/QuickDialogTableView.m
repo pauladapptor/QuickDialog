@@ -42,6 +42,16 @@
     return self;
 }
 
+- (void)setDelegate:(id<UITableViewDelegate>)delegate {
+    quickformDelegate = delegate;
+    [super setDelegate:delegate];
+}
+
+- (void)setDataSource:(id<UITableViewDataSource>)dataSource {
+    quickformDataSource = dataSource;
+    [super setDataSource:dataSource];
+}
+
 -(void)setRoot:(QRootElement *)root{
     _root = root;
     for (QSection *section in _root.sections) {
