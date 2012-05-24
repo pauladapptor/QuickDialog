@@ -159,7 +159,9 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
         UIImageWriteToSavedPhotosAlbum(chosenImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
     }
     if (_maxSize.height > 0 || _maxSize.width > 0) {
-        chosenImage = [chosenImage scaleProportionalToSize:_maxSize];
+        if (chosenImage.size.height > _maxSize.height || chosenImage.size.width > _maxSize.width) {
+            chosenImage = [chosenImage scaleProportionalToSize:_maxSize];
+        }
     }
     [self setImage:chosenImage];
     [self setHasRetrievedImage:YES];
