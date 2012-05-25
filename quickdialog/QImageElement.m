@@ -193,7 +193,8 @@ static UIImage *NO_IMAGE;
         }
         else {
             UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-            if (buttonIndex == [actionSheet firstOtherButtonIndex]) {
+            if (buttonIndex == [actionSheet firstOtherButtonIndex] 
+                && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
                 [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
             }
             else {
