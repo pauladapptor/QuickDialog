@@ -15,11 +15,14 @@
 @interface QImageElement : QLabelElement 
     <UIActionSheetDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
+@property BOOL allowsRemove;
+@property BOOL removeOnly;
 @property BOOL hasRetrievedImage;
 @property (strong, nonatomic) UIImage *defaultImage;
 @property CGSize maxSize;
 @property CGFloat maxWidth;
 @property CGFloat maxHeight;
+@property NSString *caption;
 
 + (void)setDefaultImage:(UIImage *)image;
 

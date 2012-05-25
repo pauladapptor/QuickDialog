@@ -74,9 +74,12 @@ static UIImage *NO_IMAGE;
 
 @implementation QImageElement {
     __unsafe_unretained QuickDialogController *_controller;
+    NSString* _caption;
 }
 @synthesize hasRetrievedImage = _hasRetrievedImage;
 @synthesize maxSize = _maxSize;
+@synthesize allowsRemove = _allowsRemove;
+@synthesize removeOnly = _removeOnly;
 
 - (QImageElement *)init {
     self = [super init];
@@ -92,45 +95,87 @@ static UIImage *NO_IMAGE;
     [super setImage:NO_IMAGE];
     [self setHasRetrievedImage:NO];
     [self setMaxSize:CGSizeMake(-1, -1)];
+    [self setAllowsRemove:YES];
     return self;
 }
      
 // Select an image using appropriate source
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
-    if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+    NSString *removeBtn = [self allowsRemove] && [self image] ? @"Remove Image" : nil;
+    if ([self removeOnly]) {
+        if (removeBtn) {
+            _controller = controller;
+            [[[UIActionSheet alloc] initWithTitle:[self caption]
+                                         delegate:self
+                                cancelButtonTitle:@"Cancel"
+                           destructiveButtonTitle:removeBtn
+                                otherButtonTitles:nil] showInView:tableView];
+        }
+    }
+    else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         // User has a camera
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
             // User has a camera and a photo library
             _controller = controller;
-            [[[UIActionSheet alloc] initWithTitle:[self title]
+            [[[UIActionSheet alloc] initWithTitle:[self caption]
                                          delegate:self
                                 cancelButtonTitle:@"Cancel"
-                           destructiveButtonTitle:nil
+                           destructiveButtonTitle:removeBtn
                                 otherButtonTitles:@"Take Photo", @"Choose From Library", nil] showInView:tableView];
         }
         else {
             // User only has a camera
-            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-            [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
-            [picker setDelegate:self];
-            [controller presentModalViewController:picker animated:YES];
+            if (removeBtn) {
+                _controller = controller;
+                [[[UIActionSheet alloc] initWithTitle:[self caption]
+                                             delegate:self
+                                    cancelButtonTitle:@"Cancel"
+                               destructiveButtonTitle:removeBtn
+                                    otherButtonTitles:@"Take Photo", nil] showInView:tableView];
+            }
+            else {
+                UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+                [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
+                [picker setDelegate:self];
+                [controller presentModalViewController:picker animated:YES];
+            }
         }
     }
     else {
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
             // User doesn't have a camera, but has a photo library
-            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-            [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-            [picker setDelegate:self];
-            [controller presentModalViewController:picker animated:YES];
+            if (removeBtn) {
+                _controller = controller;
+                [[[UIActionSheet alloc] initWithTitle:[self caption]
+                                             delegate:self
+                                    cancelButtonTitle:@"Cancel"
+                               destructiveButtonTitle:removeBtn
+                                    otherButtonTitles:@"Choose From Library", nil] showInView:tableView];
+            }
+            else {
+                UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+                [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+                [picker setDelegate:self];
+                [controller presentModalViewController:picker animated:YES];
+            }
         }
         else {
             // User has no means of acquiring an image
-            [[[UIAlertView alloc] initWithTitle:@"No Images Available" 
-                                       message:@"Your device does not have a camera or any photos in the photo library, please add some photos or try again on another device" 
-                                      delegate:nil 
-                              cancelButtonTitle:@"OK" otherButtonTitles:nil] 
-             show];
+            if (removeBtn) {
+                _controller = controller;
+                [[[UIActionSheet alloc] initWithTitle:[self caption]
+                                             delegate:self
+                                    cancelButtonTitle:@"Cancel"
+                               destructiveButtonTitle:removeBtn
+                                    otherButtonTitles:nil] showInView:tableView];
+            }
+            else {
+                [[[UIAlertView alloc] initWithTitle:@"No Images Available" 
+                                           message:@"Your device does not have a camera or any photos in the photo library, please add some photos or try again on another device" 
+                                          delegate:nil 
+                                  cancelButtonTitle:@"OK" otherButtonTitles:nil] 
+                 show];
+            }
         }
     }
     [super selected:tableView controller:controller indexPath:indexPath];
@@ -139,15 +184,24 @@ static UIImage *NO_IMAGE;
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (buttonIndex != [actionSheet cancelButtonIndex]) {
-        UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-        if (buttonIndex == [actionSheet firstOtherButtonIndex]) {
-            [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
+        if (buttonIndex == [actionSheet destructiveButtonIndex]) {
+            [self setImage:nil];
+            QuickDialogTableView *view = [_controller quickDialogTableView];
+            [view reloadRowsAtIndexPaths:[NSArray arrayWithObject:[view indexForElement:self]]
+                        withRowAnimation:UITableViewRowAnimationRight];
+            [self setHasRetrievedImage:YES];
         }
         else {
-            [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
+            if (buttonIndex == [actionSheet firstOtherButtonIndex]) {
+                [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
+            }
+            else {
+                [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
+            }
+            [picker setDelegate:self];
+            [_controller presentModalViewController:picker animated:YES];
         }
-        [picker setDelegate:self];
-        [_controller presentModalViewController:picker animated:YES];
     }
     _controller = nil;
 }
@@ -219,6 +273,18 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
 }
 - (CGFloat)maxHeight {
     return _maxSize.height;
+}
+
+- (void)setCaption:(NSString *)caption {
+    _caption = caption;
+}
+- (NSString *)caption {
+    if (_caption) {
+        return _caption;
+    }
+    else {
+        return [self title];
+    }
 }
 
 
