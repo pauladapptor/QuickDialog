@@ -102,9 +102,9 @@ static UIImage *NO_IMAGE;
 // Select an image using appropriate source
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
     NSString *removeBtn = [self allowsRemove] && [self image] ? @"Remove Image" : nil;
+    _controller = controller;
     if ([self removeOnly]) {
         if (removeBtn) {
-            _controller = controller;
             [[[UIActionSheet alloc] initWithTitle:[self caption]
                                          delegate:self
                                 cancelButtonTitle:@"Cancel"
@@ -116,7 +116,6 @@ static UIImage *NO_IMAGE;
         // User has a camera
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
             // User has a camera and a photo library
-            _controller = controller;
             [[[UIActionSheet alloc] initWithTitle:[self caption]
                                          delegate:self
                                 cancelButtonTitle:@"Cancel"
@@ -126,7 +125,6 @@ static UIImage *NO_IMAGE;
         else {
             // User only has a camera
             if (removeBtn) {
-                _controller = controller;
                 [[[UIActionSheet alloc] initWithTitle:[self caption]
                                              delegate:self
                                     cancelButtonTitle:@"Cancel"
@@ -145,7 +143,6 @@ static UIImage *NO_IMAGE;
         if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
             // User doesn't have a camera, but has a photo library
             if (removeBtn) {
-                _controller = controller;
                 [[[UIActionSheet alloc] initWithTitle:[self caption]
                                              delegate:self
                                     cancelButtonTitle:@"Cancel"
@@ -162,7 +159,6 @@ static UIImage *NO_IMAGE;
         else {
             // User has no means of acquiring an image
             if (removeBtn) {
-                _controller = controller;
                 [[[UIActionSheet alloc] initWithTitle:[self caption]
                                              delegate:self
                                     cancelButtonTitle:@"Cancel"
@@ -204,7 +200,9 @@ static UIImage *NO_IMAGE;
             [_controller presentModalViewController:picker animated:YES];
         }
     }
-    _controller = nil;
+    else {
+        _controller = nil;
+    }
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker 
@@ -220,6 +218,8 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     }
     [self setImage:chosenImage];
     [self setHasRetrievedImage:YES];
+    [[_controller quickDialogTableView] reloadData];
+    _controller = nil;
     [picker dismissModalViewControllerAnimated:YES];
 }
 
