@@ -93,7 +93,10 @@
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)path {
     if (self.sections==nil)
             return;
-
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(QEntryDidBeginEditingElement:andCell:)]) {
+        [self.delegate QEntryDidBeginEditingElement:self andCell:(QEntryTableViewCell *)[tableView cellForRowAtIndexPath:path]];
+    }
     [controller displayViewControllerForRoot:self];
 }
 
