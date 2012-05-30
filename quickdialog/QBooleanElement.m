@@ -70,7 +70,13 @@
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    self.boolValue = !self.boolValue;
+    if ([cell.accessoryView isKindOfClass:[UIButton class]]) {
+        [self buttonPressed:(UIButton *)cell.accessoryView];
+    }
+    else {
+        [(UISwitch *)cell.accessoryView setOn:(self.boolValue = !self.boolValue)];
+        
+    }
     if ([cell.accessoryView class] == [UIImageView class]){
         ((UIImageView *)cell.accessoryView).image =  self.boolValue ? _onImage : _offImage;
     }
