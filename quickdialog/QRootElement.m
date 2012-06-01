@@ -26,6 +26,7 @@
 @synthesize controllerName = _controllerName;
 @synthesize sectionTemplate = _sectionTemplate;
 @synthesize emptyMessage = _emptyMessage;
+@synthesize value = _value;
 
 
 - (QRootElement *)init {
@@ -54,6 +55,8 @@
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     if (_title!= nil)
         cell.textLabel.text = _title;
+    if (_value)
+        cell.detailTextLabel.text = [_value description];
     return cell;
 }
 

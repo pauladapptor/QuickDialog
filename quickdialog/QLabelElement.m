@@ -22,7 +22,6 @@
 
 
 @synthesize image = _image;
-@synthesize value = _value;
 @synthesize accessoryType = _accessoryType;
 
 
