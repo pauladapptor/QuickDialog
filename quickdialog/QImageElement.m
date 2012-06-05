@@ -80,6 +80,7 @@ static UIImage *NO_IMAGE;
 @synthesize maxSize = _maxSize;
 @synthesize allowsRemove = _allowsRemove;
 @synthesize removeOnly = _removeOnly;
+@synthesize originalImage = _originalImage;
 
 - (QImageElement *)init {
     self = [super init];
@@ -211,12 +212,16 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     if ([picker sourceType] == UIImagePickerControllerSourceTypeCamera) {
         UIImageWriteToSavedPhotosAlbum(chosenImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
     }
+    UIImage *originalImage = nil;
     if (_maxSize.height > 0 || _maxSize.width > 0) {
         if (chosenImage.size.height > _maxSize.height || chosenImage.size.width > _maxSize.width) {
+            originalImage = chosenImage;
             chosenImage = [chosenImage scaleProportionalToSize:_maxSize];
         }
     }
     [self setImage:chosenImage];
+    [self setOriginalImage:originalImage];
+    NSLog(@"%@", [self originalImage]);
     [self setHasRetrievedImage:YES];
     [[_controller quickDialogTableView] reloadData];
     _controller = nil;
@@ -239,6 +244,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     return image;
 }
 - (void)setImage:(UIImage *)image {
+    [self setOriginalImage:nil];
     if (image) {
         [super setImage:image];
     }

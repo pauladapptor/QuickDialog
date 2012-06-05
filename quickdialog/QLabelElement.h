@@ -20,7 +20,6 @@
 @interface QLabelElement : QRootElement {
 
 @protected
-    id _value;
     UIImage *_image;
 }
 

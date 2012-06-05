@@ -968,6 +968,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "sample/quickdialogexample-Prefix.pch";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				HEADER_SEARCH_PATHS = "$(SOURCE_ROOT)/Build";
 				INFOPLIST_FILE = "sample/quickdialogexample-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
@@ -984,6 +985,7 @@
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "sample/quickdialogexample-Prefix.pch";
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				HEADER_SEARCH_PATHS = "$(SOURCE_ROOT)/Build";
 				INFOPLIST_FILE = "sample/quickdialogexample-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 5.0;
