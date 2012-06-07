@@ -12,6 +12,7 @@
 //
 
 #import "QImageElement.h"
+#import "QImageTableViewCell.h"
 static UIImage *NO_IMAGE;
 
 // UIImage scaling extension based on solution from http://stackoverflow.com/a/4439449
@@ -84,7 +85,7 @@ static UIImage *NO_IMAGE;
 
 - (QImageElement *)init {
     self = [super init];
-    [super setHeight:100];
+    [super setHeight:70];
     @synchronized ([QImageElement class]) {
         if (!NO_IMAGE) {
             NSString* blankImagePath = [[NSBundle mainBundle] pathForResource:@"no_image" ofType:@"png"];
@@ -226,6 +227,23 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     [[_controller quickDialogTableView] reloadData];
     _controller = nil;
     [picker dismissModalViewControllerAnimated:YES];
+}
+
+- (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
+    QImageTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[NSString stringWithFormat:@"QuickformImageCell%@", self.key]];
+    if (cell == nil){
+        cell = [[QImageTableViewCell alloc] initWithReuseIdentifier:[NSString stringWithFormat:@"QuickformImageCell%@", self.key]];
+    }
+    cell.accessoryType = [super accessoryType] == (int) nil ? UITableViewCellAccessoryNone :  [super accessoryType];
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    cell.textLabel.text = [super title];
+    cell.detailTextLabel.text = [[self value] description];
+    cell.imageView.image = [super image];
+    cell.accessoryType = self.sections!= nil || self.controllerAction!=nil ? ( [super accessoryType] != (int) nil ?  [super accessoryType] : UITableViewCellAccessoryDisclosureIndicator) : UITableViewCellAccessoryNone;
+    cell.selectionStyle = self.sections!= nil || self.controllerAction!=nil ? UITableViewCellSelectionStyleBlue: UITableViewCellSelectionStyleNone;
+    
+    return cell;
 }
 
 - (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
