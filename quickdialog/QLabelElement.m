@@ -28,6 +28,7 @@
 - (QLabelElement *)initWithTitle:(NSString *)title Value:(id)value {
    self = [super init];
    _title = title;
+    [self setValue:value];
     return self;
 }
 
