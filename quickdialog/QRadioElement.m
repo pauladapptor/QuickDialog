@@ -21,7 +21,7 @@
 @synthesize selected = _selected;
 @synthesize values = _values;
 @synthesize items = _items;
-
+@synthesize icons = _icons;
 
 - (void)createElements {
     _sections = nil;
@@ -31,13 +31,38 @@
     [self addSection:_parentSection];
 
     for (NSUInteger i=0; i< [_items count]; i++){
-        [_parentSection addElement:[[QRadioItemElement alloc] initWithIndex:i RadioElement:self]];
+        QRadioItemElement *element = [[QRadioItemElement alloc] initWithIndex:i RadioElement:self];
+        if ([_icons count] > i) {
+            [element setImage:[_icons objectAtIndex:i]];
+        }
+        [_parentSection addElement:element];
     }
 }
 
 -(void)setItems:(NSArray *)items {
     _items = items;
     [self createElements];
+}
+-(void)setIcons:(NSArray *)icons {
+    _icons = icons;
+    int i = 0;
+    for (QRadioItemElement *element in [[[self sections] objectAtIndex:0] elements]) {
+        if ([_icons count] > i) {
+            [element setImage:[_icons objectAtIndex:i]];
+        }
+        else {
+            break;
+        }
+        i++;
+    }
+}
+
+-(void)setIconsFromValuesWithDefault:(NSString *)defaultImage {
+    NSMutableArray *icons = [[NSMutableArray alloc] initWithCapacity:[_values count]];
+    for (id value in _values) {
+        [icons addObject:([UIImage imageNamed:[value description]] ?: [UIImage imageNamed:defaultImage])];
+    }
+    [self setIcons:icons];
 }
 
 -(NSObject *)selectedValue {
@@ -107,7 +132,7 @@
     NSString *selectedValue = nil;
     if (_selected >= 0 && _selected <_items.count)
         selectedValue = [[_items objectAtIndex:(NSUInteger) _selected] description];
-
+    
     if (self.title == NULL){
         cell.textField.text = selectedValue;
         cell.detailTextLabel.text = nil;

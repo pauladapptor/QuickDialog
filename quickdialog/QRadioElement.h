@@ -24,6 +24,7 @@
 @property(nonatomic, assign) id selectedItem;
 @property(nonatomic, assign, readwrite) NSInteger selected;
 @property(nonatomic, retain) NSArray *values;
+@property(nonatomic, retain) NSArray *icons;
 
 - (QRadioElement *)initWithDict:(NSDictionary *)valuesDictionary selected:(int)selected title:(NSString *)title;
 
@@ -31,6 +32,9 @@
 
 - (NSObject *)selectedValue;
 - (void)setSelectedValue:(NSObject *)aSelected;
+
+-(void)setIcons:(NSArray *)icons;
+-(void)setIconsFromValuesWithDefault:(NSString *)defaultImage;
 
 - (QRadioElement *)initWithItems:(NSArray *)stringArray selected:(NSInteger)selected;
 - (QRadioElement *)initWithItems:(NSArray *)stringArray selected:(NSInteger)selected title:(NSString *)title;
