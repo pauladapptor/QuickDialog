@@ -57,12 +57,12 @@
         selectedCell.accessoryType = UITableViewCellAccessoryCheckmark;
     }
 
-    if (_radioElement!= nil){
+    if (_radioElement!= nil)
+    {
         _radioElement.selected = _index;
         if (_radioElement.delegate && [_radioElement.delegate respondsToSelector:@selector(QEntryDidEndEditingElement:andCell:)]) {
             [_radioElement.delegate QEntryDidEndEditingElement:_radioElement andCell:nil];
         }
-
         [_radioElement handleElementSelected:controller];
         tableView.userInteractionEnabled = NO;
 
@@ -72,9 +72,15 @@
             userInfo:nil
             repeats:NO];
 
-    } else if (_radioSection!=nil){
+    }
+    else if (_radioSection!=nil)
+    {
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
         _radioSection.selected = _index;
+        if (_radioSection.onSelected) {
+            _radioSection.onSelected();
+        }
     }
 }
 
