@@ -34,7 +34,11 @@ UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
 }
 
 + (UIDatePicker *)getPickerForDate {
-    QDATEENTRY_GLOBAL_PICKER = [[UIDatePicker alloc] init];
+    @synchronized (self) {
+        if (!QDATEENTRY_GLOBAL_PICKER) {
+            QDATEENTRY_GLOBAL_PICKER = [[UIDatePicker alloc] init];
+        }
+    }
     return QDATEENTRY_GLOBAL_PICKER;
 }
 
@@ -56,11 +60,14 @@ UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
     _pickerView.datePickerMode = element.mode;
     _pickerView.maximumDate = element.maximumDate;
     _pickerView.minimumDate = element.minimumDate;
-    if (element.dateValue!=nil)
+    if (element.dateValue)
         _pickerView.date = element.dateValue;
+    else
+        _pickerView.date = [NSDate date];
 
     [super textFieldDidBeginEditing:textField];
     self.selected = YES;
+    [self dateChanged:_pickerView];
 }
 
 - (void)createSubviews {
