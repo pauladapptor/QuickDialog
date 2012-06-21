@@ -33,7 +33,6 @@
 - (NSObject *)selectedValue;
 - (void)setSelectedValue:(NSObject *)aSelected;
 
--(void)setIcons:(NSArray *)icons;
 -(void)setIconsFromValuesWithDefault:(NSString *)defaultImage;
 
 - (QRadioElement *)initWithItems:(NSArray *)stringArray selected:(NSInteger)selected;

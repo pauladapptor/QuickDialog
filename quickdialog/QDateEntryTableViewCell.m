@@ -18,6 +18,10 @@
 
 UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
 
+@interface QDateEntryTableViewCell ()
+- (void) dateChanged:(id)sender;
+@end
+
 @implementation QDateEntryTableViewCell
 
 @synthesize pickerView = _pickerView;

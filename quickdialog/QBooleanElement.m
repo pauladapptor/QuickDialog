@@ -13,6 +13,9 @@
 //
 
 #import <objc/message.h>
+@interface QBooleanElement()
+- (void)buttonPressed:(UIButton *)boolButton;
+@end
 
 @implementation QBooleanElement {
     __unsafe_unretained QuickDialogController *_controller;
