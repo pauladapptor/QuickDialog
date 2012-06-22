@@ -22,7 +22,7 @@
 @property CGSize maxSize;
 @property CGFloat maxWidth;
 @property CGFloat maxHeight;
-@property NSString *caption;
+@property (copy) NSString *caption;
 @property (strong, nonatomic) UIImage *originalImage;
 
 + (void)setDefaultImage:(UIImage *)image;
