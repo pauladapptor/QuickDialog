@@ -98,9 +98,9 @@
     
     //cell.contentView.frame = frame1;
     
-    NSLog(@"cell.textView.frame: %f", frame1.size.height);
-    NSLog(@"cell.textView.text: %@f", cell.textView.text);
-    NSLog(@"text: %@f", (NSString *)self.value);
+    //NSLog(@"cell.textView.frame: %f", frame1.size.height);
+    //NSLog(@"cell.textView.text: %@f", cell.textView.text);
+    //NSLog(@"text: %@f", (NSString *)self.value);
     
     return cell;
 }
