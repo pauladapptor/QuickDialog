@@ -15,6 +15,7 @@
 @interface QImageElement : QLabelElement 
     <UIActionSheetDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate>
 
+@property BOOL allowsEdit;
 @property BOOL allowsRemove;
 @property BOOL removeOnly;
 @property BOOL hasRetrievedImage;

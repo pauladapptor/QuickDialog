@@ -11,6 +11,8 @@
 // permissions and limitations under the License.
 //
 
+static BOOL allowEditDefault = NO;
+
 #import "QImageElement.h"
 #import "QImageTableViewCell.h"
 static UIImage *NO_IMAGE;
@@ -82,6 +84,7 @@ static UIImage *NO_IMAGE;
 @synthesize allowsRemove = _allowsRemove;
 @synthesize removeOnly = _removeOnly;
 @synthesize originalImage = _originalImage;
+@synthesize allowsEdit = _allowsEdit;
 
 - (QImageElement *)init {
     self = [super init];
@@ -96,8 +99,10 @@ static UIImage *NO_IMAGE;
     }
     [super setImage:NO_IMAGE];
     [self setHasRetrievedImage:NO];
-    [self setMaxSize:CGSizeMake(-1, -1)];
-    [self setAllowsRemove:YES];
+    self.hasRetrievedImage = NO;
+    self.maxSize = CGSizeMake(-1, -1);
+    self.allowsEdit = allowEditDefault;
+    self.allowsRemove = YES;
     return self;
 }
      
@@ -137,6 +142,7 @@ static UIImage *NO_IMAGE;
                 UIImagePickerController *picker = [[UIImagePickerController alloc] init];
                 [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
                 [picker setDelegate:self];
+                [picker setAllowsEditing:_allowsEdit];
                 [controller presentModalViewController:picker animated:YES];
             }
         }
@@ -155,6 +161,7 @@ static UIImage *NO_IMAGE;
                 UIImagePickerController *picker = [[UIImagePickerController alloc] init];
                 [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
                 [picker setDelegate:self];
+                [picker setAllowsEditing:_allowsEdit];
                 [controller presentModalViewController:picker animated:YES];
             }
         }
@@ -199,6 +206,7 @@ static UIImage *NO_IMAGE;
                 [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
             }
             [picker setDelegate:self];
+            [picker setAllowsEditing:_allowsEdit];
             [_controller presentModalViewController:picker animated:YES];
         }
     }
@@ -209,24 +217,38 @@ static UIImage *NO_IMAGE;
 
 - (void)imagePickerController:(UIImagePickerController *)picker 
 didFinishPickingMediaWithInfo:(NSDictionary *)info {
-    UIImage *chosenImage = [info objectForKey:UIImagePickerControllerOriginalImage];
-    if ([picker sourceType] == UIImagePickerControllerSourceTypeCamera) {
-        UIImageWriteToSavedPhotosAlbum(chosenImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-    }
-    UIImage *originalImage = nil;
-    if (_maxSize.height > 0 || _maxSize.width > 0) {
-        if (chosenImage.size.height > _maxSize.height || chosenImage.size.width > _maxSize.width) {
-            originalImage = chosenImage;
-            chosenImage = [chosenImage scaleProportionalToSize:_maxSize];
-        }
-    }
-    [self setImage:chosenImage];
-    [self setOriginalImage:originalImage];
-    NSLog(@"%@", [self originalImage]);
-    [self setHasRetrievedImage:YES];
-    [[_controller quickDialogTableView] reloadData];
-    _controller = nil;
     [picker dismissModalViewControllerAnimated:YES];
+    picker = nil;
+    info = [NSDictionary dictionaryWithDictionary:info];
+    UIImage *chosenImage = [info objectForKey:UIImagePickerControllerEditedImage];
+    if (!chosenImage) {
+        chosenImage = [info objectForKey:UIImagePickerControllerOriginalImage];
+    }
+    if (!chosenImage) {
+        [[[UIAlertView alloc] initWithTitle:@"Problem retrieving photo" 
+                                    message:nil delegate:nil
+                          cancelButtonTitle:@"OK" otherButtonTitles:nil]
+         show];
+        self.allowsEdit = YES; // Hack for weird iOS bug
+        allowEditDefault = YES;
+    }
+    else {
+        if ([picker sourceType] == UIImagePickerControllerSourceTypeCamera) {
+            UIImageWriteToSavedPhotosAlbum(chosenImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
+        }
+        UIImage *originalImage = nil;
+        if (_maxSize.height > 0 || _maxSize.width > 0) {
+            if (chosenImage.size.height > _maxSize.height || chosenImage.size.width > _maxSize.width) {
+                originalImage = chosenImage;
+                chosenImage = [chosenImage scaleProportionalToSize:_maxSize];
+            }
+        }
+        self.image = chosenImage;
+        self.originalImage = originalImage;
+        self.hasRetrievedImage = YES;
+        [[_controller quickDialogTableView] reloadData];
+    }
+    _controller = nil;
 }
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
