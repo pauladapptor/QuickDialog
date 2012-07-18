@@ -172,6 +172,10 @@
     if(_entryElement && _entryElement.delegate && [_entryElement.delegate respondsToSelector:@selector(QEntryDidBeginEditingElement:andCell:)]){
         [_entryElement.delegate QEntryDidBeginEditingElement:_entryElement andCell:self];
     }
+    
+    if (_entryElement && _entryElement.onSelected) {
+        _entryElement.onSelected();
+    }
 }
 
 - (void)textFieldDidEndEditing:(UITextField *)textField {
