@@ -66,7 +66,12 @@
 }
 
 -(NSObject *)selectedValue {
-    return [_values objectAtIndex:(NSUInteger) _selected];
+    if (_values && 0 <= _selected && _selected < [_values count]) {
+        return [_values objectAtIndex:(NSUInteger) _selected];
+    }
+    else {
+        return nil;
+    }
 }
 
 -(void)setSelectedValue:(NSObject *)aSelected {
