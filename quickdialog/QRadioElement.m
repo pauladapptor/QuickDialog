@@ -121,9 +121,6 @@
 }
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)path {
-    if (self.onSelected) {
-        self.onSelected();
-    }
     if (self.sections==nil)
             return;
     
