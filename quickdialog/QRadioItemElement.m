@@ -63,7 +63,6 @@
         if (_radioElement.delegate && [_radioElement.delegate respondsToSelector:@selector(QEntryDidEndEditingElement:andCell:)]) {
             [_radioElement.delegate QEntryDidEndEditingElement:_radioElement andCell:nil];
         }
-        [_radioElement handleElementSelected:controller];
         tableView.userInteractionEnabled = NO;
 
         [NSTimer scheduledTimerWithTimeInterval:0.3
