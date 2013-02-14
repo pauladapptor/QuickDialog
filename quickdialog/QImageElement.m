@@ -85,11 +85,11 @@ static UIImage *NO_IMAGE;
 @synthesize removeOnly = _removeOnly;
 @synthesize originalImage = _originalImage;
 @synthesize allowsEdit = _allowsEdit;
+@synthesize defaultImage = _defaultImage;
+@synthesize defaultImageName = _defaultImageName;
 
-- (QImageElement *)init {
-    self = [super init];
-    [super setHeight:70];
-    @synchronized ([QImageElement class]) {
++ (void)initialize {
+    if ([self class] == [QImageElement class]) {
         if (!NO_IMAGE) {
             NSString* blankImagePath = [[NSBundle mainBundle] pathForResource:@"no_image" ofType:@"png"];
             if (blankImagePath) {
@@ -97,7 +97,13 @@ static UIImage *NO_IMAGE;
             }
         }
     }
+}
+
+- (QImageElement *)init {
+    self = [super init];
+    [super setHeight:70];
     [super setImage:NO_IMAGE];
+    [self setDefaultImage:NO_IMAGE];
     [self setHasRetrievedImage:NO];
     self.hasRetrievedImage = NO;
     self.maxSize = CGSizeMake(-1, -1);
@@ -278,7 +284,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
 
 - (UIImage *)image {
     UIImage *image = [super image];
-    if (image == NO_IMAGE) {
+    if (image == [self defaultImage]) {
         image = nil;
     }
     return image;
@@ -289,7 +295,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
         [super setImage:image];
     }
     else {
-        [super setImage:NO_IMAGE];
+        [super setImage:[self defaultImage]];
     }
 }
 
@@ -301,12 +307,20 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
 }
 
 - (void)setDefaultImage:(UIImage *)defaultImage {
-    [QImageElement setDefaultImage:defaultImage];
+    if ([super image] == _defaultImage) {
+        [super setImage:defaultImage];
+    }
+    _defaultImage = defaultImage;
 }
 
-- (UIImage *)defaultImage {
-    return NO_IMAGE;
+- (void)setDefaultImageName:(NSString *)defaultImageName {
+    UIImage *defaultImage = [UIImage imageNamed:defaultImageName];
+    if (defaultImage) {
+        _defaultImageName = defaultImageName;
+        [self setDefaultImage:defaultImage];
+    }
 }
+
 
 // Manage maximum size
 - (void)setMaxWidth:(CGFloat)maxWidth {

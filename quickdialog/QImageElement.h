@@ -25,6 +25,7 @@
 @property CGFloat maxHeight;
 @property (copy) NSString *caption;
 @property (strong, nonatomic) UIImage *originalImage;
+@property (strong, nonatomic) NSString *defaultImageName;
 
 + (void)setDefaultImage:(UIImage *)image;
 
