@@ -24,7 +24,7 @@
 @property(nonatomic, retain) UIImage *onImage;
 @property(nonatomic, retain) UIImage *offImage;
 @property (nonatomic) BOOL boolValue;
-@property(nonatomic) BOOL enabled;
+@property(nonatomic, getter=isEnabled) BOOL enabled;
 
 - (QBooleanElement *)initWithTitle:(NSString *)title BoolValue:(BOOL)value;
 

@@ -72,31 +72,35 @@
 }
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    if ([cell.accessoryView isKindOfClass:[UIButton class]]) {
-        [self buttonPressed:(UIButton *)cell.accessoryView];
+    if (self.enabled) {
+        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+        if ([cell.accessoryView isKindOfClass:[UIButton class]]) {
+            [self buttonPressed:(UIButton *)cell.accessoryView];
+        }
+        else {
+            [(UISwitch *)cell.accessoryView setOn:(self.boolValue = !self.boolValue)];
+            
+        }
+        if ([cell.accessoryView class] == [UIImageView class]){
+            ((UIImageView *)cell.accessoryView).image =  self.boolValue ? _onImage : _offImage;
+        }
+        if (self.controllerAction==nil)
+            [tableView deselectRowAtIndexPath:indexPath animated:YES];
     }
-    else {
-        [(UISwitch *)cell.accessoryView setOn:(self.boolValue = !self.boolValue)];
-        
-    }
-    if ([cell.accessoryView class] == [UIImageView class]){
-        ((UIImageView *)cell.accessoryView).image =  self.boolValue ? _onImage : _offImage;
-    }
-    if (self.controllerAction==nil)
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
     [self handleElementSelected:controller];
 }
 
 - (void)buttonPressed:(UIButton *)boolButton {
-    self.boolValue = !boolButton.selected;
-    boolButton.selected = _boolValue;
-    if (_controller!=nil && self.controllerAccessoryAction!=nil) {
-        SEL selector = NSSelectorFromString(self.controllerAccessoryAction);
-        if ([_controller respondsToSelector:selector]) {
-            objc_msgSend(_controller,selector, self);
-        }  else {
-            NSLog(@"No method '%@' was found on controller %@", self.controllerAccessoryAction, [_controller class]);
+    if (self.enabled) {
+        self.boolValue = !boolButton.selected;
+        boolButton.selected = _boolValue;
+        if (_controller!=nil && self.controllerAccessoryAction!=nil) {
+            SEL selector = NSSelectorFromString(self.controllerAccessoryAction);
+            if ([_controller respondsToSelector:selector]) {
+                objc_msgSend(_controller,selector, self);
+            }  else {
+                NSLog(@"No method '%@' was found on controller %@", self.controllerAccessoryAction, [_controller class]);
+            }
         }
     }
 }
