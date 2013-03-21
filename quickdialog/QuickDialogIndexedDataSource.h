@@ -1,0 +1,3 @@
+@interface QuickDialogIndexedDataSource : QuickDialogDataSource
+@end
+
