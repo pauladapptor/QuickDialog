@@ -12,6 +12,8 @@
 // permissions and limitations under the License.
 //
 
+#import "QuickDialogIndexedDataSource.h"
+
 @implementation QuickDialogTableView {
     BOOL _deselectRowWhenViewAppears;
 }
@@ -31,7 +33,10 @@
         self.root = _controller.root;
         self.deselectRowWhenViewAppears = YES;
 
-        quickformDataSource = [[QuickDialogDataSource alloc] initForTableView:self];
+		if (controller.indexed)
+			quickformDataSource = [[QuickDialogIndexedDataSource alloc] initForTableView:self];
+		else
+			quickformDataSource = [[QuickDialogDataSource alloc] initForTableView:self];
         self.dataSource = quickformDataSource;
 
         quickformDelegate = [[QuickDialogTableDelegate alloc] initForTableView:self];
