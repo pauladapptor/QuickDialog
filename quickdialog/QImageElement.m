@@ -1,351 +1,154 @@
-// Copyright 2012 Adapptor - http://adapptor.com.au
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
-// file except in compliance with the License. You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
+//
+// Copyright 2012 Ludovic Landry - http://about.me/ludoviclandry
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+// file except in compliance with the License. You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
 // Unless required by applicable law or agreed to in writing, software distributed under
-// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF 
+// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 // ANY KIND, either express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
 
-static BOOL allowEditDefault = NO;
-
-#import "QImageElement.h"
 #import "QImageTableViewCell.h"
-static UIImage *NO_IMAGE;
 
-// UIImage scaling extension based on solution from http://stackoverflow.com/a/4439449
-@interface UIImage (UIImageFunctions)
-- (UIImage *) scaleToSize: (CGSize)size;
-- (UIImage *) scaleProportionalToSize: (CGSize)size;
-@end
+@interface QImageElement () <UINavigationControllerDelegate, UIImagePickerControllerDelegate, UIPopoverControllerDelegate>
 
-@implementation UIImage (UIImageFunctions)
-
-- (UIImage *) scaleToSize: (CGSize)size
-{
-    if (size.width < 0) {
-        size.width = self.size.width;
-    }
-    if (size.height < 0) {
-        size.height = self.size.height;
-    }
-    // Scalling selected image to targeted size
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, colorSpace, kCGImageAlphaPremultipliedLast);
-    CGContextClearRect(context, CGRectMake(0, 0, size.width, size.height));
-    
-    if(self.imageOrientation == UIImageOrientationRight)
-    {
-        CGContextRotateCTM(context, -M_PI_2);
-        CGContextTranslateCTM(context, -size.height, 0.0f);
-        CGContextDrawImage(context, CGRectMake(0, 0, size.height, size.width), self.CGImage);
-    }
-    else
-        CGContextDrawImage(context, CGRectMake(0, 0, size.width, size.height), self.CGImage);
-    
-    CGImageRef scaledImage=CGBitmapContextCreateImage(context);
-    
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
-    
-    UIImage *image = [UIImage imageWithCGImage: scaledImage];
-    
-    CGImageRelease(scaledImage);
-    
-    return image;
-}
-
-- (UIImage *) scaleProportionalToSize: (CGSize)size1
-{
-    if(self.size.width>self.size.height)
-    {
-        size1=CGSizeMake((self.size.width/self.size.height)*size1.height,size1.height);
-    }
-    else
-    {
-        size1=CGSizeMake(size1.width,(self.size.height/self.size.width)*size1.width);
-    }
-    return [self scaleToSize:size1];
-}
+@property(nonatomic, retain) UIImagePickerController *imagePickerController;
+@property(nonatomic, strong) UIPopoverController *popoverController;
 
 @end
-
 
 @implementation QImageElement {
-    __unsafe_unretained QuickDialogController *_controller;
-    NSString* _caption;
-}
-@synthesize hasRetrievedImage = _hasRetrievedImage;
-@synthesize maxSize = _maxSize;
-@synthesize allowsRemove = _allowsRemove;
-@synthesize removeOnly = _removeOnly;
-@synthesize originalImage = _originalImage;
-@synthesize allowsEdit = _allowsEdit;
-@synthesize defaultImage = _defaultImage;
-@synthesize defaultImageName = _defaultImageName;
-
-+ (void)initialize {
-    if ([self class] == [QImageElement class]) {
-        if (!NO_IMAGE) {
-            NSString* blankImagePath = [[NSBundle mainBundle] pathForResource:@"no_image" ofType:@"png"];
-            if (blankImagePath) {
-                NO_IMAGE = [UIImage imageWithContentsOfFile:blankImagePath];
-            }
-        }
-    }
+    enum UIImagePickerControllerSourceType _source;
 }
 
-- (QImageElement *)init {
+@synthesize imageValue;
+@synthesize imageMaxLength;
+@synthesize imagePickerController;
+@synthesize popoverController;
+@synthesize source = _source;
+
+
+- (QEntryElement *)init {
     self = [super init];
-    [super setHeight:70];
-    [super setImage:NO_IMAGE];
-    [self setDefaultImage:NO_IMAGE];
-    [self setHasRetrievedImage:NO];
-    self.hasRetrievedImage = NO;
-    self.maxSize = CGSizeMake(-1, -1);
-    self.allowsEdit = allowEditDefault;
-    self.allowsRemove = YES;
+    if (self) {
+        _source = UIImagePickerControllerSourceTypePhotoLibrary;
+        self.imageMaxLength = FLT_MAX;
+    }
+    
     return self;
 }
-     
-// Select an image using appropriate source
-- (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
-    NSString *removeBtn = [self allowsRemove] && [self image] ? @"Remove Image" : nil;
-    _controller = controller;
-    if ([self removeOnly]) {
-        if (removeBtn) {
-            [[[UIActionSheet alloc] initWithTitle:[self caption]
-                                         delegate:self
-                                cancelButtonTitle:@"Cancel"
-                           destructiveButtonTitle:removeBtn
-                                otherButtonTitles:nil] showInView:tableView];
-        }
+
+- (QImageElement *)initWithTitle:(NSString *)aTitle detailImage:(UIImage *)anImage {
+    self = [super init];
+    if (self) {
+        self.title = aTitle;
+        self.imageValue = anImage;
+        self.imageMaxLength = FLT_MAX;
+        _source = UIImagePickerControllerSourceTypePhotoLibrary;
     }
-    else if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-        // User has a camera
-        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
-            // User has a camera and a photo library
-            [[[UIActionSheet alloc] initWithTitle:[self caption]
-                                         delegate:self
-                                cancelButtonTitle:@"Cancel"
-                           destructiveButtonTitle:removeBtn
-                                otherButtonTitles:@"Take Photo", @"Choose From Library", nil] showInView:tableView];
-        }
-        else {
-            // User only has a camera
-            if (removeBtn) {
-                [[[UIActionSheet alloc] initWithTitle:[self caption]
-                                             delegate:self
-                                    cancelButtonTitle:@"Cancel"
-                               destructiveButtonTitle:removeBtn
-                                    otherButtonTitles:@"Take Photo", nil] showInView:tableView];
-            }
-            else {
-                UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-                [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
-                [picker setDelegate:self];
-                [picker setAllowsEditing:_allowsEdit];
-                [controller presentModalViewController:picker animated:YES];
-            }
-        }
-    }
-    else {
-        if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypePhotoLibrary]) {
-            // User doesn't have a camera, but has a photo library
-            if (removeBtn) {
-                [[[UIActionSheet alloc] initWithTitle:[self caption]
-                                             delegate:self
-                                    cancelButtonTitle:@"Cancel"
-                               destructiveButtonTitle:removeBtn
-                                    otherButtonTitles:@"Choose From Library", nil] showInView:tableView];
-            }
-            else {
-                UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-                [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-                [picker setDelegate:self];
-                [picker setAllowsEditing:_allowsEdit];
-                [controller presentModalViewController:picker animated:YES];
-            }
-        }
-        else {
-            // User has no means of acquiring an image
-            if (removeBtn) {
-                [[[UIActionSheet alloc] initWithTitle:[self caption]
-                                             delegate:self
-                                    cancelButtonTitle:@"Cancel"
-                               destructiveButtonTitle:removeBtn
-                                    otherButtonTitles:nil] showInView:tableView];
-            }
-            else {
-                [[[UIAlertView alloc] initWithTitle:@"No Images Available" 
-                                           message:@"Your device does not have a camera or any photos in the photo library, please add some photos or try again on another device" 
-                                          delegate:nil 
-                                  cancelButtonTitle:@"OK" otherButtonTitles:nil] 
-                 show];
-            }
-        }
-    }
-    [super selected:tableView controller:controller indexPath:indexPath];
+    return self;
 }
 
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (buttonIndex != [actionSheet cancelButtonIndex]) {
-        if (buttonIndex == [actionSheet destructiveButtonIndex]) {
-            [self setImage:nil];
-            QuickDialogTableView *view = [_controller quickDialogTableView];
-            [view reloadRowsAtIndexPaths:[NSArray arrayWithObject:[view indexForElement:self]]
-                        withRowAnimation:UITableViewRowAnimationRight];
-            [self setHasRetrievedImage:YES];
-        }
-        else {
-            UIImagePickerController *picker = [[UIImagePickerController alloc] init];
-            if (buttonIndex == [actionSheet firstOtherButtonIndex] 
-                && [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
-                [picker setSourceType:UIImagePickerControllerSourceTypeCamera];
-            }
-            else {
-                [picker setSourceType:UIImagePickerControllerSourceTypePhotoLibrary];
-            }
-            [picker setDelegate:self];
-            [picker setAllowsEditing:_allowsEdit];
-            [_controller presentModalViewController:picker animated:YES];
-        }
-    }
-    else {
-        _controller = nil;
-    }
-}
-
-- (void)imagePickerController:(UIImagePickerController *)picker 
-didFinishPickingMediaWithInfo:(NSDictionary *)info {
-    [picker dismissModalViewControllerAnimated:YES];
-    picker = nil;
-    info = [NSDictionary dictionaryWithDictionary:info];
-    UIImage *chosenImage = [info objectForKey:UIImagePickerControllerEditedImage];
-    if (!chosenImage) {
-        chosenImage = [info objectForKey:UIImagePickerControllerOriginalImage];
-    }
-    if (!chosenImage) {
-        [[[UIAlertView alloc] initWithTitle:@"Problem retrieving photo" 
-                                    message:nil delegate:nil
-                          cancelButtonTitle:@"OK" otherButtonTitles:nil]
-         show];
-        self.allowsEdit = YES; // Hack for weird iOS bug
-        allowEditDefault = YES;
-    }
-    else {
-        if ([picker sourceType] == UIImagePickerControllerSourceTypeCamera) {
-            UIImageWriteToSavedPhotosAlbum(chosenImage, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
-        }
-        UIImage *originalImage = nil;
-        if (_maxSize.height > 0 || _maxSize.width > 0) {
-            if (chosenImage.size.height > _maxSize.height || chosenImage.size.width > _maxSize.width) {
-                originalImage = chosenImage;
-                chosenImage = [chosenImage scaleProportionalToSize:_maxSize];
-            }
-        }
-        self.image = chosenImage;
-        self.originalImage = originalImage;
-        self.hasRetrievedImage = YES;
-        [[_controller quickDialogTableView] reloadData];
-    }
-    _controller = nil;
+- (void)setImageValueNamed:(NSString *)name {
+    self.imageValue = [UIImage imageNamed:name];
+    [self reducedImageIfNeeded];
 }
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
-    QImageTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:[NSString stringWithFormat:@"QuickformImageCell%@", self.key]];
-    if (cell == nil){
-        cell = [[QImageTableViewCell alloc] initWithReuseIdentifier:[NSString stringWithFormat:@"QuickformImageCell%@", self.key]];
+    QImageTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"QuickformImageElement"];
+    if (cell == nil) {
+        cell = [[QImageTableViewCell alloc] init];
     }
-    cell.accessoryType = [super accessoryType] == (int) nil ? UITableViewCellAccessoryNone :  [super accessoryType];
-    cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    
-    cell.textLabel.text = [super title];
-    cell.detailTextLabel.text = [[self value] description];
-    cell.imageView.image = [super image];
-    cell.accessoryType = self.sections!= nil || self.controllerAction!=nil ? ( [super accessoryType] != (int) nil ?  [super accessoryType] : UITableViewCellAccessoryDisclosureIndicator) : UITableViewCellAccessoryNone;
-    cell.selectionStyle = self.sections!= nil || self.controllerAction!=nil ? UITableViewCellSelectionStyleBlue: UITableViewCellSelectionStyleNone;
+    [cell prepareForElement:self inTableView:tableView];
     
     return cell;
 }
 
-- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo
-{
-#ifdef DEBUG
-    if (error)
-        NSLog(@"Error saving image: %@", error);
-#endif
+- (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)path {
+    [tableView deselectRowAtIndexPath:path animated:YES];
+    
+    [self presentImagePicker:tableView controller:controller path:path];
 }
 
-- (UIImage *)image {
-    UIImage *image = [super image];
-    if (image == [self defaultImage]) {
-        image = nil;
+- (void)presentImagePicker:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller path:(NSIndexPath *)path {
+    if ([UIImagePickerController isSourceTypeAvailable:_source]) {
+        self.imagePickerController.sourceType = _source;
+    } else {
+        NSLog(@"Source not available, using default Library type.");
+        self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     }
-    return image;
-}
-- (void)setImage:(UIImage *)image {
-    [self setOriginalImage:nil];
-    if (image) {
-        [super setImage:image];
-    }
-    else {
-        [super setImage:[self defaultImage]];
-    }
-}
-
-// Manage default image for all instances
-+ (void)setDefaultImage:(UIImage *)image {
-    @synchronized ([QImageElement class]) {
-        NO_IMAGE = image;
-    }
-}
-
-- (void)setDefaultImage:(UIImage *)defaultImage {
-    if ([super image] == _defaultImage) {
-        [super setImage:defaultImage];
-    }
-    _defaultImage = defaultImage;
-}
-
-- (void)setDefaultImageName:(NSString *)defaultImageName {
-    UIImage *defaultImage = [UIImage imageNamed:defaultImageName];
-    if (defaultImage) {
-        _defaultImageName = defaultImageName;
-        [self setDefaultImage:defaultImage];
+    
+    BOOL isPhone = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone;
+    if (isPhone) {
+        [controller displayViewController:self.imagePickerController];
+    } else {
+        UITableViewCell *tableViewCell = [tableView cellForRowAtIndexPath:path];
+        if ([tableViewCell isKindOfClass:[QImageTableViewCell class]]) {
+            UIView *presentingView = ((QImageTableViewCell *) tableViewCell).imageViewButton;
+            
+            UIPopoverController *aPopoverController = [[UIPopoverController alloc] initWithContentViewController:self.imagePickerController];
+            [aPopoverController presentPopoverFromRect:presentingView.bounds
+                                                inView:presentingView
+                              permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+            aPopoverController.delegate = self;
+            self.popoverController = aPopoverController;
+        }
     }
 }
 
-
-// Manage maximum size
-- (void)setMaxWidth:(CGFloat)maxWidth {
-    _maxSize.width = maxWidth;
-}
-- (CGFloat)maxWidth {
-    return _maxSize.width;
-}
-- (void)setMaxHeight:(CGFloat)maxHeight {
-    _maxSize.height = maxHeight;
-}
-- (CGFloat)maxHeight {
-    return _maxSize.height;
+- (UIImagePickerController *)imagePickerController {
+    if (!imagePickerController) {
+        imagePickerController = [[UIImagePickerController alloc] init];
+        imagePickerController.delegate = self;
+    }
+    return imagePickerController;
 }
 
-- (void)setCaption:(NSString *)caption {
-    _caption = caption;
+- (void)dismissImagePickerController {
+    BOOL isPhone = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone;
+    if (isPhone) {
+        [self.imagePickerController dismissViewControllerAnimated:YES completion:NULL];
+    } else {
+        [self.popoverController dismissPopoverAnimated:YES];
+    }
 }
-- (NSString *)caption {
-    if (_caption) {
-        return _caption;
+
+- (void)reducedImageIfNeeded {
+    if (self.imageValue.size.width > self.imageMaxLength || self.imageValue.size.height > self.imageMaxLength) {
+        float scale = self.imageMaxLength / MAX(self.imageValue.size.width, self.imageValue.size.height);
+        CGSize scaledSize = CGSizeMake(self.imageValue.size.width * scale, self.imageValue.size.height * scale);
+        
+        UIGraphicsBeginImageContext(scaledSize);
+        [self.imageValue drawInRect:CGRectMake(0, 0, scaledSize.width, scaledSize.height)];
+        self.imageValue = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
     }
-    else {
-        return [self title];
-    }
+}
+
+#pragma mark -
+#pragma mark UIImagePickerControllerDelegate
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
+    
+    self.imageValue = [info valueForKey:UIImagePickerControllerOriginalImage];
+    [self reducedImageIfNeeded];
+    
+    [self dismissImagePickerController];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    [self dismissImagePickerController];
+}
+
+#pragma mark -
+#pragma mark UIPopoverControllerDelegate
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
+    self.popoverController = nil;
 }
 
 @end
