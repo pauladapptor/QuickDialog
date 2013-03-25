@@ -18,6 +18,7 @@
 
 @implementation QMapViewController
 
+
 - (QMapViewController *)initWithTitle:(NSString *)title coordinate:(CLLocationCoordinate2D)coordinate {
     self = [self initWithCoordinate:coordinate];
     _mapTitle = title;
@@ -38,6 +39,8 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+
     _mapView.region = MKCoordinateRegionMake(_coordinate, MKCoordinateSpanMake(0.05, 0.05));
     _mapView.zoomEnabled = YES;
     [_mapView regionThatFits:_mapView.region];
@@ -55,5 +58,6 @@
     pin.pinColor = MKPinAnnotationColorGreen;
     return pin;
 }
+
 
 @end

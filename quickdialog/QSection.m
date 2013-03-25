@@ -13,13 +13,18 @@
 //
 
 #import "QBindingEvaluator.h"
+#import "QSection.h"
+#import "QuickDialog.h"
 
 @implementation QSection {
 @private
+    id _object;
     NSString *_headerImage;
     NSString *_footerImage;
     NSDictionary *_elementTemplate;
     BOOL _canDeleteRows;
+    NSMutableArray *_afterTemplateElements;
+    NSMutableArray *_beforeTemplateElements;
 }
 @synthesize title;
 @synthesize footer;
@@ -34,7 +39,51 @@
 @synthesize footerImage = _footerImage;
 @synthesize elementTemplate = _elementTemplate;
 @synthesize canDeleteRows = _canDeleteRows;
+@synthesize afterTemplateElements = _afterTemplateElements;
+@synthesize beforeTemplateElements = _beforeTemplateElements;
 
+@synthesize hidden = _hidden;
+@dynamic visibleIndex;
+@synthesize object = _object;
+
+
+- (QElement *)getVisibleElementForIndex:(NSInteger)index
+{
+    for (QElement * q in self.elements)
+    {
+        if (!q.hidden && index-- == 0)
+            return q;
+    }
+    return nil;
+}
+- (NSInteger)visibleNumberOfElements
+{
+    NSUInteger c = 0;
+    for (QElement * q in self.elements)
+    {
+        if (!q.hidden)
+            c++;
+    }
+    return c;
+}
+
+- (NSUInteger)getVisibleIndexForElement:(QElement*)element
+{
+    NSUInteger c = 0;
+    for (QElement * q in self.elements)
+    {
+        if (q == element)
+            return c;
+        if (!q.hidden)
+            ++c;
+    }
+    return NSNotFound;
+}
+
+- (NSUInteger) visibleIndex
+{
+    return [self.rootElement getVisibleIndexForSection:self];
+}
 
 - (BOOL)needsEditing {
     return NO;

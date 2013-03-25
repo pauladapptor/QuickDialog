@@ -64,7 +64,7 @@
     _autocompleteLabel.font = self.font;
     _autocompleteLabel.backgroundColor = [UIColor clearColor];
     _autocompleteLabel.textColor = [UIColor lightGrayColor];
-    _autocompleteLabel.lineBreakMode = UILineBreakModeClip;
+    _autocompleteLabel.lineBreakMode = NSLineBreakByClipping;
     [self addSubview:_autocompleteLabel];
     [self bringSubviewToFront:_autocompleteLabel];
     
@@ -83,6 +83,7 @@
         _autocompleteLabel.text = @"";
     }
     
+    [self _tryToUpdateLabelWithNewCompletion];
     _autocompleteLabel.hidden = NO;
     return [super becomeFirstResponder];
 }
@@ -107,12 +108,12 @@
     
     CGSize prefixTextSize = [self.text sizeWithFont:self.font
                                   constrainedToSize:textRect.size
-                                      lineBreakMode:UILineBreakModeCharacterWrap];
+                                      lineBreakMode:NSLineBreakByCharWrapping];
     //    NSLog(@"prefixTextSize: %@",  NSStringFromCGSize(prefixTextSize));
     
     CGSize autocompleteTextSize = [_autoCompleteString sizeWithFont:self.font 
                                                   constrainedToSize:CGSizeMake(textRect.size.width-prefixTextSize.width, textRect.size.height)
-                                                      lineBreakMode:UILineBreakModeCharacterWrap];
+                                                      lineBreakMode:NSLineBreakByCharWrapping];
     
     //    NSLog(@"autocompleteTextSize: %@",  NSStringFromCGSize(autocompleteTextSize)); 
     
@@ -136,7 +137,12 @@
 
 - (void)_textDidChange:(NSNotification*)notification
 {
-    if ([((id<DOAutocompleteTextFieldDelegate>)self.delegate) respondsToSelector:@selector(textField:completionForPrefix:)] ) 
+    [self _tryToUpdateLabelWithNewCompletion];
+}
+
+- (void)_tryToUpdateLabelWithNewCompletion
+{
+    if ([((id<DOAutocompleteTextFieldDelegate>)self.delegate) respondsToSelector:@selector(textField:completionForPrefix:)] )
     {
         _autoCompleteString = [((id<DOAutocompleteTextFieldDelegate>)self.delegate) textField:self completionForPrefix:self.text];
         [self _updateAutocompleteLabel];

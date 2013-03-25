@@ -12,13 +12,19 @@
 // permissions and limitations under the License.
 //
 
-@implementation QEntryElement
+#import "QEntryElement.h"
+#import "QuickDialog.h"
+@implementation QEntryElement  {
+    __unsafe_unretained QuickDialogController *_controller;
+}
 
 @synthesize textValue = _textValue;
 @synthesize placeholder = _placeholder;
 @synthesize prefix = _prefix;
 @synthesize suffix = _suffix;
 @synthesize hiddenToolbar = _hiddenToolbar;
+
+@synthesize onValueChanged = _onValueChanged;
 
 @synthesize delegate = _delegate;
 
@@ -52,9 +58,13 @@
     if (cell==nil){
         cell = [[QEntryTableViewCell alloc] init];
     }
+
+    [cell applyAppearanceForElement:self];
+    _controller = controller;
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
-    cell.textField.enabled = YES;
-    cell.textField.userInteractionEnabled = YES;
+    cell.textField.enabled = self.enabled;
+    cell.textField.userInteractionEnabled = self.enabled;
+    cell.textField.textAlignment = self.appearance.entryAlignment;
     cell.imageView.image = self.image;
     [cell prepareForElement:self inTableView:tableView];
     return cell;
@@ -65,6 +75,11 @@
 
 }
 
+- (void) fieldDidEndEditing
+{
+    [self handleElementSelected:_controller];
+}
+
 - (void)fetchValueIntoObject:(id)obj {
 	if (_key==nil)
 		return;
@@ -72,6 +87,9 @@
 	[obj setValue:_textValue forKey:_key];
 }
 
+- (BOOL)canTakeFocus {
+    return self.enabled && !self.hidden;
+}
 
 #pragma mark - UITextInputTraits
 
@@ -84,6 +102,7 @@
 @synthesize secureTextEntry = _secureTextEntry;
 @synthesize clearsOnBeginEditing = _clearsOnBeginEditing;
 @synthesize accessoryType = _accessoryType;
+@synthesize customDateFormat = _customDateFormat;
 
 
 @end

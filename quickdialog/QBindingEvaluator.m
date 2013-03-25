@@ -13,6 +13,7 @@
 //
 
 #import "QBindingEvaluator.h"
+#import "QuickDialog.h"
 
 @interface QBindingEvaluator ()
 + (BOOL)stringIsEmpty:(NSString *)aString;
@@ -34,7 +35,7 @@
 
 
 - (void)bindObject:(id)object toData:(id)data {
-    if (![object respondsToSelector:@selector(bind)])
+    if (![object respondsToSelector:@selector(bind)])				
         return;
 
     NSString *string = [object bind];
@@ -80,8 +81,20 @@
 - (void)bindSection:(QSection *)section toCollection:(NSArray *)items {
     [section.elements removeAllObjects];
 
+    for (id item in section.beforeTemplateElements){
+        QElement *element = [_builder buildElementWithObject:item];
+        [section addElement:element];
+        [element bindToObject:item];
+    }
+
     for (id item in items){
         QElement *element = [_builder buildElementWithObject:section.elementTemplate];
+        [section addElement:element];
+        [element bindToObject:item];
+    }
+
+    for (id item in section.afterTemplateElements){
+        QElement *element = [_builder buildElementWithObject:item];
         [section addElement:element];
         [element bindToObject:item];
     }
@@ -121,7 +134,8 @@
         NSString *propName = [((NSString *) [bindingParams objectAtIndex:0]) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         NSString *valueName = [((NSString *) [bindingParams objectAtIndex:1]) stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 
-        [data setValue:[element valueForKey:propName] forKey:valueName];
+        if (![propName isEqualToString:@"iterate"] && ![valueName isEqualToString:@"self"])
+            [data setValue:[element valueForKey:propName] forKeyPath:valueName];
     }
 
 }

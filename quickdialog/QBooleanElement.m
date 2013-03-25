@@ -17,13 +17,15 @@
 - (void)buttonPressed:(UIButton *)boolButton;
 @end
 
+#import "QBooleanElement.h"
+#import "QuickDialogController.h"
+
 @implementation QBooleanElement {
     __unsafe_unretained QuickDialogController *_controller;
 }
 @synthesize onImage = _onImage;
 @synthesize offImage = _offImage;
 @synthesize boolValue = _boolValue;
-@synthesize enabled = _enabled;
 
 
 - (QBooleanElement *)init {
@@ -36,6 +38,14 @@
     self.boolValue = value;
     self.enabled = YES;
     return self;
+}
+
+-(void)setNumberValue:(NSNumber *)number {
+    self.boolValue = number.boolValue;
+}
+
+-(NSNumber *)numberValue {
+    return [NSNumber numberWithBool:self.boolValue];
 }
 
 - (void)setOnImageName:(NSString *)name {
@@ -60,8 +70,9 @@
 
     } else {
         UIButton *boolButton = [[UIButton alloc] init];
-        [boolButton setImage:self.offImage forState:UIControlStateNormal];
-        [boolButton setImage:self.onImage forState:UIControlStateSelected];
+        [boolButton setImage:self.offImage forState: UIControlStateNormal];
+        [boolButton setImage:self.onImage forState: UIControlStateSelected];
+        [boolButton setImage:self.onImage forState: UIControlStateSelected | UIControlStateDisabled];
         cell.accessoryView = boolButton;
         boolButton.enabled = self.enabled;
         boolButton.selected = self.boolValue;
@@ -72,21 +83,19 @@
 }
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
-    if (self.enabled) {
-        UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-        if ([cell.accessoryView isKindOfClass:[UIButton class]]) {
-            [self buttonPressed:(UIButton *)cell.accessoryView];
-        }
-        else {
-            [(UISwitch *)cell.accessoryView setOn:(self.boolValue = !self.boolValue)];
-            
-        }
-        if ([cell.accessoryView class] == [UIImageView class]){
-            ((UIImageView *)cell.accessoryView).image =  self.boolValue ? _onImage : _offImage;
-        }
-        if (self.controllerAction==nil)
-            [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    }
+	if (self.enabled) {
+		UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+		self.boolValue = !self.boolValue;
+		if ([cell.accessoryView class] == [UIButton class]) {
+			((UIButton *)cell.accessoryView).selected = self.boolValue;
+		}
+		else if ([cell.accessoryView class] == [UISwitch class]) {
+			[((UISwitch *)cell.accessoryView) setOn:self.boolValue animated:YES];
+		}
+
+		if (self.controllerAction==nil)
+			[tableView deselectRowAtIndexPath:indexPath animated:YES];
+	}
     [self handleElementSelected:controller];
 }
 
@@ -105,6 +114,13 @@
     }
 }
 
+-(void)setBoolValue:(BOOL)boolValue {
+    _boolValue = boolValue;
+    if (self.onValueChanged!=nil){
+        self.onValueChanged(self);
+    }
+}
+
 - (void)switched:(id)boolSwitch {
     self.boolValue = ((UISwitch *)boolSwitch).on;
     if ((_controller != nil && self.controllerAction != nil) || _onSelected != nil) {
@@ -117,6 +133,18 @@
 		return;
     [obj setValue:[NSNumber numberWithBool:self.boolValue] forKey:_key];
 }
+
+
+- (void)setNilValueForKey:(NSString *)key;
+{
+    if ([key isEqualToString:@"boolValue"]){
+        self.boolValue = NO;
+    }
+    else {
+        [super setNilValueForKey:key];
+    }
+}
+
 
 
 @end

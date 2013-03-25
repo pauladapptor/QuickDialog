@@ -348,5 +348,4 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info {
     }
 }
 
-
 @end
