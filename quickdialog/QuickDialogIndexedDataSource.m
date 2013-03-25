@@ -9,15 +9,16 @@
 @implementation QuickDialogIndexedDataSource
 
 - (NSArray *)sectionIndexTitlesForTableView:(UITableView *)tableView {
-	return nil;
+	return [[UILocalizedIndexedCollation currentCollation] sectionIndexTitles];
 }
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    return [_tableView.root getVisibleSectionForIndex:section].title;
+	return [super tableView:tableView titleForHeaderInSection:section];
+    // return [_tableView.root getVisibleSectionForIndex:section].title;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index {
-	return 0;
+	return [[UILocalizedIndexedCollation currentCollation] sectionForSectionIndexTitleAtIndex:index];
 }
 
 @end
