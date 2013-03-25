@@ -38,6 +38,7 @@
 @property(nonatomic, strong) UIPopoverController *popoverBeingPresented;
 @property(nonatomic, strong) UIPopoverController *popoverForChildRoot;
 
+@property(nonatomic) BOOL indexed;
 
 - (void)loadView;
 
