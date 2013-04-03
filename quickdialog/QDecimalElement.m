@@ -46,7 +46,6 @@
     if (cell==nil){
         cell = [[QDecimalTableViewCell alloc] init];
     }
-    self.keyboardType = UIKeyboardTypeDecimalPad;
     [cell prepareForElement:self inTableView:tableView];
     cell.textField.userInteractionEnabled = self.enabled;
 
