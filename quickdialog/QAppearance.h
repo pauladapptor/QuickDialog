@@ -28,6 +28,27 @@
 @property(nonatomic, strong) UIFont *sectionFooterFont;
 @property(nonatomic, strong) UIColor *sectionFooterColor;
 @property(nonatomic) NSTextAlignment entryAlignment;
+@property(nonatomic) NSTextAlignment buttonAlignment;
 @property(nonatomic, strong) UIView *selectedBackgroundView;
 @property(nonatomic, strong) UIColor *sectionTitleShadowColor;
+@property(nonatomic) BOOL toolbarTranslucent;
+@property(nonatomic) CGFloat cellBorderWidth;
+
+@property(nonatomic) UIBarStyle toolbarStyle;
+@property(nonatomic) UITableViewCellSeparatorStyle tableSeparatorStyle;
+
+
+@property(nonatomic, strong) UIView *tableGroupedBackgroundView;
+
+- (void)setDefaults;
+
+- (UIView *)buildHeaderForSection:(QSection *)section andTableView:(QuickDialogTableView *)tableView andIndex:(NSInteger)index;
+
+- (UIView *)buildFooterForSection:(QSection *)section andTableView:(QuickDialogTableView *)tableView andIndex:(NSInteger)index;
+
+- (CGFloat)heightForHeaderInSection:(QSection *)section andTableView:(QuickDialogTableView *)tableView andIndex:(NSInteger)index;
+
+- (CGFloat)heightForFooterInSection:(QSection *)section andTableView:(QuickDialogTableView *)tableView andIndex:(NSInteger)index;
+
+- (void)cell:(UITableViewCell *)cell willAppearForElement:(QElement *)element atIndexPath:(NSIndexPath *)path;
 @end

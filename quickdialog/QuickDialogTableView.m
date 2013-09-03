@@ -1,13 +1,13 @@
-//                                
+//
 // Copyright 2011 ESCOZ Inc  - http://escoz.com
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
-// file except in compliance with the License. You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+// file except in compliance with the License. You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
 // Unless required by applicable law or agreed to in writing, software distributed under
-// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF 
+// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 // ANY KIND, either express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
@@ -21,7 +21,6 @@
 }
 
 @synthesize root = _root;
-@synthesize styleProvider = _styleProvider;
 @synthesize deselectRowWhenViewAppears = _deselectRowWhenViewAppears;
 
 - (QuickDialogController *)controller {
@@ -35,14 +34,11 @@
         self.root = _controller.root;
         self.deselectRowWhenViewAppears = YES;
 
-		if (controller.indexed)
-			quickformDataSource = [[QuickDialogIndexedDataSource alloc] initForTableView:self];
-		else
-			quickformDataSource = [[QuickDialogDataSource alloc] initForTableView:self];
-        self.dataSource = quickformDataSource;
+        quickDialogDataSource = [[QuickDialogDataSource alloc] initForTableView:self];
+        self.dataSource = quickDialogDataSource;
 
-        quickformDelegate = [[QuickDialogTableDelegate alloc] initForTableView:self];
-        self.delegate = quickformDelegate;
+        quickDialogDelegate = [[QuickDialogTableDelegate alloc] initForTableView:self];
+        self.delegate = quickDialogDelegate;
 
         self.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     }
@@ -50,12 +46,12 @@
 }
 
 - (void)setDelegate:(id<UITableViewDelegate>)delegate {
-    quickformDelegate = delegate;
+    quickDialogDelegate = delegate;
     [super setDelegate:delegate];
 }
 
 - (void)setDataSource:(id<UITableViewDataSource>)dataSource {
-    quickformDataSource = dataSource;
+    quickDialogDataSource = dataSource;
     [super setDataSource:dataSource];
 }
 
@@ -70,19 +66,32 @@
     [self reloadData];
 }
 
+- (void)reloadData
+{
+    [self applyAppearanceForRoot:self.root];
+    [super reloadData];
+}
+
+
 - (void)applyAppearanceForRoot:(QRootElement *)element {
     if (element.appearance.tableGroupedBackgroundColor !=nil){
-        
-        self.backgroundColor = element.grouped 
-                ? element.appearance.tableGroupedBackgroundColor 
+
+        self.backgroundColor = element.grouped
+                ? element.appearance.tableGroupedBackgroundColor
                 : element.appearance.tableBackgroundColor;
 
         self.backgroundView = element.appearance.tableBackgroundView;
     }
-    if (element.appearance.tableBackgroundView!=nil)
+    if (element.appearance.tableBackgroundView!=nil && !element.grouped)
         self.backgroundView = element.appearance.tableBackgroundView;
 
-    self.separatorColor = element.appearance.tableSeparatorColor;
+    if (element.appearance.tableGroupedBackgroundView!=nil && element.grouped)
+        self.backgroundView = element.appearance.tableGroupedBackgroundView;
+
+    if (element.appearance.tableSeparatorColor!=nil)
+        self.separatorColor = element.appearance.tableSeparatorColor;
+
+    self.separatorStyle = element.appearance.tableSeparatorStyle;
 
 }
 
@@ -100,37 +109,21 @@
     return NULL;
 }
 
-- (NSIndexPath *)visibleIndexForElement:(QElement *)element {
-    if (element.hidden)
-        return NULL;
-    
-    NSUInteger s = 0;
-    for (QSection * q in _root.sections)
-    {
-        if (!q.hidden)
-        {
-            NSUInteger e = 0;
-            for (QElement * r in q.elements)
-            {
-                if (r == element)
-                    return [NSIndexPath indexPathForRow:e inSection:s];
-                ++e;
-            }
-        }
-        ++s;
-    }
-    return NULL;
+- (void)setContentInset:(UIEdgeInsets)contentInset
+{
+    super.contentInset = contentInset;
+    self.scrollIndicatorInsets = contentInset;
 }
+
 
 - (UITableViewCell *)cellForElement:(QElement *)element {
     if (element.hidden)
         return nil;
-    return [self cellForRowAtIndexPath:[self visibleIndexForElement:element]];
+    return [self cellForRowAtIndexPath:[element getIndexPath]];
 }
 
-- (void)viewWillAppear {
-
-    [self applyAppearanceForRoot:self.root];
+- (void)deselectRows
+{
     NSArray *selected = nil;
     if ([self indexPathForSelectedRow]!=nil && _deselectRowWhenViewAppears){
         NSIndexPath *selectedRowIndex = [self indexPathForSelectedRow];
@@ -155,5 +148,6 @@
 
     va_end(args);
 }
+
 
 @end

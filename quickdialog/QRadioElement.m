@@ -1,13 +1,13 @@
-//                                
+//
 // Copyright 2011 ESCOZ Inc  - http://escoz.com
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
-// file except in compliance with the License. You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+// file except in compliance with the License. You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
 // Unless required by applicable law or agreed to in writing, software distributed under
-// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF 
+// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 // ANY KIND, either express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
@@ -73,12 +73,10 @@
 }
 
 -(NSObject *)selectedValue {
-    if (_values && 0 <= _selected && _selected < [_values count]) {
-        return [_values objectAtIndex:(NSUInteger) _selected];
-    }
-    else {
+    if (_selected<0 || _selected>=_values.count)
         return nil;
-    }
+
+    return [_values objectAtIndex:(NSUInteger) _selected];
 }
 
 -(void)setSelectedValue:(NSObject *)aSelected {
@@ -117,7 +115,7 @@
 
 
 -(void)setSelectedItem:(id)item {
-    if (self.items==nil)
+    if (self.items==nil || item==nil)
         return;
     self.selected = [self.items indexOfObject:item];
 }
@@ -146,7 +144,7 @@
     }
     if (self.sections==nil)
             return;
-    
+
     if (self.delegate && [self.delegate respondsToSelector:@selector(QEntryDidBeginEditingElement:andCell:)]) {
         [self.delegate QEntryDidBeginEditingElement:self andCell:(QEntryTableViewCell *)[tableView cellForRowAtIndexPath:path]];
     }
@@ -175,10 +173,13 @@
         cell.textField.text = [selectedValue description];
         cell.detailTextLabel.text = nil;
         cell.textField.textAlignment = self.appearance.labelAlignment;
+        cell.textField.textColor = self.enabled ? self.appearance.labelColorEnabled : self.appearance.labelColorDisabled;
     } else {
         cell.textLabel.text = _title;
         cell.textField.text = [selectedValue description];
         cell.textField.textAlignment = self.appearance.valueAlignment;
+        cell.textField.textColor = self.enabled ? self.appearance.labelColorEnabled : self.appearance.labelColorDisabled;
+        cell.detailTextLabel.textColor = self.enabled ? self.appearance.entryTextColorEnabled : self.appearance.entryTextColorDisabled;
     }
     cell.imageView.image = _image;
 }
@@ -189,10 +190,11 @@
     self.preselectedElementIndex = [NSIndexPath indexPathForRow:_selected inSection:0];
     self.image = [UIImage imageNamed:[_itemsImageNames objectAtIndex:(NSUInteger) self.selected]];
 
+    [self handleEditingChanged];
 }
 
 - (void)fetchValueIntoObject:(id)obj {
-	if (_key==nil)	
+	if (_key==nil)
 		return;
 
     if (_selected < 0 || _selected >= (_values != nil ? _values : _items).count)

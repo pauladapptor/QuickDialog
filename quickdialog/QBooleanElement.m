@@ -116,9 +116,8 @@
 
 -(void)setBoolValue:(BOOL)boolValue {
     _boolValue = boolValue;
-    if (self.onValueChanged!=nil){
-        self.onValueChanged(self);
-    }
+    
+    [self handleEditingChanged];
 }
 
 - (void)switched:(id)boolSwitch {

@@ -17,6 +17,10 @@
 #import <UIKit/UIKit.h>
 #import "QRootElement.h"
 
+/**
+  QLabelElement: simple inline label + value cell
+*/
+
 @interface QLabelElement : QRootElement {
 
 @protected
@@ -32,4 +36,5 @@
 
 - (QLabelElement *)initWithTitle:(NSString *)string Value:(id)value;
 
+- (void)setIconNamed:(NSString *)name;
 @end
