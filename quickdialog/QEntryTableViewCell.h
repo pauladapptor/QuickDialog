@@ -30,7 +30,7 @@
     QTextField *_textField;
 
 @protected
-    __unsafe_unretained QuickDialogTableView *_quickformTableView;
+    __weak QuickDialogTableView *_quickformTableView;
 }
 
 @property(nonatomic, strong) QTextField *textField;
