@@ -46,13 +46,13 @@
 }
 
 - (void)setDelegate:(id<UITableViewDelegate>)delegate {
-    quickDialogDelegate = delegate;
     [super setDelegate:delegate];
+    quickDialogDelegate = delegate;
 }
 
 - (void)setDataSource:(id<UITableViewDataSource>)dataSource {
-    quickDialogDataSource = dataSource;
     [super setDataSource:dataSource];
+    quickDialogDataSource = dataSource;
 }
 
 -(void)setRoot:(QRootElement *)root{
