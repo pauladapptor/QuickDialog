@@ -61,6 +61,10 @@
     _pickerView.minimumDate = element.minimumDate;
     _pickerView.minuteInterval = element.minuteInterval;
 
+    if (@available(iOS 13.4, *)) {
+        _pickerView.preferredDatePickerStyle = UIDatePickerStyleWheels;
+    }
+    
     if (element.mode != UIDatePickerModeCountDownTimer && element.dateValue != nil)
         _pickerView.date = element.dateValue;
     else if (element.mode == UIDatePickerModeCountDownTimer && element.ticksValue != nil)
