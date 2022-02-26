@@ -10,7 +10,6 @@ NSString * const QPickerTableViewCellIdentifier = @"QPickerTableViewCell";
 @private
     NSArray *_items;
     
-    UIPickerView *_pickerView;
 }
 
 - (QPickerElement *)init
@@ -51,7 +50,7 @@ NSString * const QPickerTableViewCellIdentifier = @"QPickerTableViewCell";
 - (void)fetchValueIntoObject:(id)obj
 {
 	if (_key != nil) {
-        [obj setValue:_value forKey:_key];
+        [obj setValue:[self value] forKey:_key];
     }
 }
 

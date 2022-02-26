@@ -1,13 +1,13 @@
-//                                
+//
 // Copyright 2011 ESCOZ Inc  - http://escoz.com
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
-// file except in compliance with the License. You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
+// file except in compliance with the License. You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
 // Unless required by applicable law or agreed to in writing, software distributed under
-// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF 
+// the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
 // ANY KIND, either express or implied. See the License for the specific language governing
 // permissions and limitations under the License.
 //
@@ -30,6 +30,7 @@
 @synthesize controllerName = _controllerName;
 @synthesize sectionTemplate = _sectionTemplate;
 @synthesize emptyMessage = _emptyMessage;
+@synthesize value = _value;
 @synthesize onValueChanged = _onValueChanged;
 @synthesize presentationMode = _presentationMode;
 @synthesize preselectedElementIndex = _preselectedElementIndex;
@@ -108,6 +109,8 @@
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     if (_title!= nil)
         cell.textLabel.text = [NSString stringWithFormat:@"%@", _title];
+    if (_value)
+        cell.detailTextLabel.text = [_value description];
     return cell;
 }
 
@@ -121,7 +124,7 @@
 }
 
 - (void)handleEditingChanged
-{    
+{
     if(self.onValueChanged) {
         self.onValueChanged(self);
     }

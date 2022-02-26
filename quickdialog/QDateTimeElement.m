@@ -32,6 +32,8 @@
 
 
 @synthesize dateValue = _dateValue;
+@synthesize dateTitle = _dateTitle;
+@synthesize timeTitle = _timeTitle;
 
 - (void)setMode:(UIDatePickerMode)mode {
 	_mode = mode;
@@ -42,6 +44,16 @@
 - (void)setMinuteInterval:(NSInteger)minuteInterval
 {
     _minuteInterval = minuteInterval;
+    self.sections = nil;
+    [self initializeRoot];
+}
+- (void)setDateTitle:(NSString *)dateTitle {
+    _dateTitle = dateTitle;
+    self.sections = nil;
+    [self initializeRoot];
+}
+- (void)setTimeTitle:(NSString *)timeTitle {
+    _timeTitle = timeTitle;
     self.sections = nil;
     [self initializeRoot];
 }
@@ -122,12 +134,23 @@
         dateForSection = NSDate.date;
     }
 	QSection *section = [[QSection alloc] initWithTitle:(_mode == UIDatePickerModeDateAndTime ? @"\n" : @"\n\n")];
+    if (_mode == UIDatePickerModeDate || _mode == UIDatePickerModeDateAndTime){
+        QDateTimeInlineElement *dateElement = (QDateTimeInlineElement *) [[QDateTimeInlineElement alloc] initWithKey:@"date"];
+        dateElement.title = self.dateTitle;
+        dateElement.dateValue = dateForSection;
+        dateElement.mode =  UIDatePickerModeDate;
+        dateElement.hiddenToolbar = YES;
+        dateElement.centerLabel = !self.dateTitle;
+        [section addElement:dateElement];
+
+    }
     if (_mode == UIDatePickerModeTime || _mode == UIDatePickerModeDateAndTime){
         QDateTimeInlineElement *timeElement = (QDateTimeInlineElement *) [[QDateTimeInlineElement alloc] initWithKey:@"time"];
+        timeElement.title = self.timeTitle;
         timeElement.dateValue = dateForSection;
-        timeElement.centerLabel = YES;
         timeElement.mode = UIDatePickerModeTime;
         timeElement.hiddenToolbar = YES;
+        timeElement.centerLabel = !self.timeTitle;
         timeElement.minuteInterval = _minuteInterval;
         
         [section addElement:timeElement];
@@ -159,6 +182,9 @@
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)indexPath {
 
+    if (self.onSelected)
+        self.onSelected();
+    
     if (self.sections==nil)
             return;
 
@@ -199,7 +225,9 @@
         self.dateValue = [[NSCalendar currentCalendar] dateFromComponents:components];
     };
 
-    [newController.quickDialogTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0] animated:NO scrollPosition:UITableViewScrollPositionNone];
+    int row = _mode == UIDatePickerModeDateAndTime ? 1 : 0;
+    [newController.quickDialogTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0] animated:NO scrollPosition:UITableViewScrollPositionNone];
+    [[[[newController.root.sections objectAtIndex:0] elements] objectAtIndex:row] selected:newController.quickDialogTableView controller:newController indexPath:[NSIndexPath indexPathForRow:row inSection:0]];
 
 }
 

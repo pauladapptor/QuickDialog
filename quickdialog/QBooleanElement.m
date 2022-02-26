@@ -100,7 +100,6 @@
 - (void)buttonPressed:(UIButton *)boolButton {
     self.boolValue = !boolButton.selected;
     boolButton.selected = _boolValue;
-    [self performAccessoryAction];
 }
 
 -(void)setBoolValue:(BOOL)boolValue {
