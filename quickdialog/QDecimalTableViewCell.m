@@ -36,8 +36,9 @@
     _textField.borderStyle = UITextBorderStyleNone;
     _textField.keyboardType = UIKeyboardTypeDecimalPad;
     _textField.delegate = self;
-    _textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    _textField.autoresizingMask = ( UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+    _textField.clearButtonMode = UITextFieldViewModeNever;
+//    _textField.autoresizingMask = ( UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+    _textField.textAlignment = UITextAlignmentRight;
     [self.contentView addSubview:_textField];
 
     [self setNeedsLayout];
@@ -57,6 +58,7 @@
 - (void)prepareForElement:(QEntryElement *)element inTableView:(QuickDialogTableView *)view {
     [super prepareForElement:element inTableView:view];
     _entryElement = element;
+    _textField.textAlignment = UITextAlignmentRight;
     [self updateTextFieldFromElement];
 }
 

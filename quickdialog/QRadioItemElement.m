@@ -64,6 +64,9 @@
     if (_radioElement!= nil)
     {
         _radioElement.selected = _index;
+        if (_radioElement.delegate && [_radioElement.delegate respondsToSelector:@selector(QEntryDidEndEditingElement:andCell:)]) {
+            [_radioElement.delegate QEntryDidEndEditingElement:_radioElement andCell:nil];
+        }
         [_radioElement fieldDidEndEditing];
         tableView.userInteractionEnabled = NO;
 

@@ -24,14 +24,12 @@
 @interface QLabelElement : QRootElement {
 
 @protected
-    id _value;
     UIImage *_image;
 }
 
 @property(nonatomic, strong) UIImage *image;
 @property(nonatomic, assign) NSString *imageNamed;
 @property(nonatomic, assign) UITableViewCellAccessoryType accessoryType;
-@property(nonatomic, strong) id value;
 
 
 @property(nonatomic) BOOL keepSelected;

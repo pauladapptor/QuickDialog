@@ -30,6 +30,8 @@
 
 @property(nonatomic, retain) NSDate *dateValue;
 @property(nonatomic, assign) NSNumber *ticksValue;
+@property(nonatomic, assign) NSString *dateTitle;
+@property(nonatomic, assign) NSString *timeTitle;
 
 @property (assign) NSInteger minuteInterval;
 

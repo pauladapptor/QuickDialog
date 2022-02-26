@@ -21,9 +21,9 @@
 @class QuickDialogTableView;
 
 @interface QImageTableViewCell : QEntryTableViewCell {
-
-   QImageElement *_imageElement;
-   UIButton *_imageViewButton;
+    
+    QImageElement *_imageElement;
+    UIButton *_imageViewButton;
 }
 
 @property (nonatomic, retain) UIButton *imageViewButton;

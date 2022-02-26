@@ -41,7 +41,7 @@
         _source = UIImagePickerControllerSourceTypePhotoLibrary;
         self.imageMaxLength = FLT_MAX;
     }
-
+    
     return self;
 }
 
@@ -69,13 +69,13 @@
         cell = [[QImageTableViewCell alloc] init];
     }
     [cell prepareForElement:self inTableView:tableView];
-
+    
     return cell;
 }
 
 - (void)selected:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller indexPath:(NSIndexPath *)path {
     [tableView deselectRowAtIndexPath:path animated:YES];
-
+    
     [self presentImagePicker:tableView controller:controller path:path];
 }
 
@@ -94,7 +94,7 @@
         NSLog(@"Source not available, using default Library type.");
         self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     }
-
+    
     BOOL isPhone = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone;
     if (isPhone) {
         [controller displayViewController:self.imagePickerController];
@@ -102,7 +102,7 @@
         UITableViewCell *tableViewCell = [tableView cellForRowAtIndexPath:path];
         if ([tableViewCell isKindOfClass:[QImageTableViewCell class]]) {
             UIView *presentingView = ((QImageTableViewCell *) tableViewCell).imageViewButton;
-
+            
             UIPopoverController *aPopoverController = [[UIPopoverController alloc] initWithContentViewController:self.imagePickerController];
             [aPopoverController presentPopoverFromRect:presentingView.bounds
                                                 inView:presentingView
@@ -134,7 +134,7 @@
     if (self.imageValue.size.width > self.imageMaxLength || self.imageValue.size.height > self.imageMaxLength) {
         float scale = self.imageMaxLength / MAX(self.imageValue.size.width, self.imageValue.size.height);
         CGSize scaledSize = CGSizeMake(self.imageValue.size.width * scale, self.imageValue.size.height * scale);
-
+        
         UIGraphicsBeginImageContext(scaledSize);
         [self.imageValue drawInRect:CGRectMake(0, 0, scaledSize.width, scaledSize.height)];
         self.imageValue = UIGraphicsGetImageFromCurrentImageContext();
@@ -146,10 +146,10 @@
 #pragma mark UIImagePickerControllerDelegate
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-
+    
     self.imageValue = [info valueForKey:UIImagePickerControllerOriginalImage];
     [self reducedImageIfNeeded];
-
+    
     [self dismissImagePickerController];
 }
 

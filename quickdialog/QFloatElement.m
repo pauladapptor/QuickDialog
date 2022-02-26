@@ -69,7 +69,6 @@
     cell.slider.value = _floatValue;
     
     cell.textLabel.text = _title;
-    cell.detailTextLabel.text = [_value description];
     cell.imageView.image = _image;
     cell.accessoryType = self.accessoryType != UITableViewCellAccessoryNone ? self.accessoryType : ( self.sections!= nil || self.controllerAction!=nil ? UITableViewCellAccessoryDisclosureIndicator : UITableViewCellAccessoryNone);
     cell.selectionStyle = self.sections!= nil || self.controllerAction!=nil ? UITableViewCellSelectionStyleBlue: UITableViewCellSelectionStyleNone;
